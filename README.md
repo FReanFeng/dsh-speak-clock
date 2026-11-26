@@ -5,7 +5,7 @@
 ## 安装
 
 ```bash
-dsh plugin add github:13972252645/dsh-speak-clock
+dsh plugin add github:FReanFeng/dsh-speak-clock
 ```
 
 装完**重启一次 DSH**（bundle 层要重启才组装）。之后进「设置 → 搭话闹钟」配：开总开关、勾上要搭话的会话。
