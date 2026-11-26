@@ -722,6 +722,12 @@ export function apply(ctx) {
           .filter((e) => !e.state || e.state === 'armed')
           .filter((e) => !sid || e.sessionId === sid)
           .map((e) => ({ id: e.id, at: e.at, text: e.text, kind: e.kind ?? 'text', sessionId: e.sessionId }))
+        // ⭐ 轻探不落盘：给对话框头上的倒计时也塞一条虚拟条目，不然那里看不到它
+        for (const [psid, loop] of probeLoops) {
+          if (!loop || !loop.dueAt) continue
+          if (sid && psid !== sid) continue
+          pending.push({ id: 'probe:' + psid, at: loop.dueAt, text: '（轻探·后台自动续）', kind: 'probe', sessionId: psid, virtual: true })
+        }
         res.writeHead(200, { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' })
         res.end(JSON.stringify({ ok: true, now: Date.now(), entries: pending }))
       },
