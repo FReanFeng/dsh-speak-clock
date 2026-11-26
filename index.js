@@ -676,9 +676,18 @@ function fmt(ts) {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`
 }
 
-function summarize(entry) {
+function sessionTitles() {
+  try {
+    return new Map(allSessions(true).map((x) => [x.id, x.title || x.id.slice(0, 16) + '…']))
+  } catch {
+    return new Map()
+  }
+}
+
+function summarize(entry, titles) {
   const left = Math.max(0, Math.round((entry.at - Date.now()) / 1000))
-  return `[${entry.id.slice(0, 8)}] ${fmt(entry.at)}（${left}s 后）→ ${entry.sessionId.slice(0, 16)}… ｜ ${entry.state ?? 'armed'} ｜ 「${entry.text.slice(0, 30)}」`
+  const name = (titles && titles.get(entry.sessionId)) || entry.sessionId.slice(0, 16) + '…'
+  return `[${entry.id.slice(0, 8)}] ${fmt(entry.at)}（${left}s 后）→ 会话「${name}」 ｜ ${entry.state ?? 'armed'} ｜ 「${entry.text.slice(0, 30)}」`
 }
 
 const RESULT_SCHEMA = {
@@ -1033,7 +1042,7 @@ export function apply(ctx) {
       const action = String(args?.action ?? 'list')
 
       if (action === 'status') {
-        return { ok: true, text: pending.length ? `还有 ${pending.length} 个闹钟在等：\n${pending.map(summarize).join('\n')}` : '没有在等的闹钟。' }
+        return { ok: true, text: pending.length ? `还有 ${pending.length} 个闹钟在等：\n${pending.map((e) => summarize(e, sessionTitles())).join('\n')}` : '没有在等的闹钟。' }
       }
       if (action === 'cancel') {
         const raw = String(args?.id ?? '').trim()
@@ -1050,7 +1059,8 @@ export function apply(ctx) {
         return { ok: true, text: `已取消：${fmt(target.at)} 那条。` }
       }
       if (!list.length) return { ok: true, text: '一个闹钟都没有。用 speak_later 定一个。' }
-      return { ok: true, text: list.map((e, i) => `${i + 1}. ${summarize(e)}`).join('\n') }
+      const titles = sessionTitles()
+      return { ok: true, text: list.map((e, i) => `${i + 1}. ${summarize(e, titles)}`).join('\n') }
     },
   }))
 

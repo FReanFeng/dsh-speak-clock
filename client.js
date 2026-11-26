@@ -131,6 +131,7 @@ window.__ModuleLoader__.load({
       const [msg, setMsg] = React.useState('')
       const [busy, setBusy] = React.useState(false)
       const [showAll, setShowAll] = React.useState(false)
+      const [filterSession, setFilterSession] = React.useState('')
       const [gate, setGate] = React.useState({ enabled: true, sessions: [] })
 
       const refresh = React.useCallback(async () => {
@@ -175,6 +176,9 @@ window.__ModuleLoader__.load({
       const others = entries.filter((e) => e.state && e.state !== 'armed')
       const probeFor = pending.find((e) => e.probe !== undefined && e.sessionId === sessionId)
       const fixedFor = pending.find((e) => e.probe === undefined && e.sessionId === sessionId)
+      // 按会话筛选「在等的」列表
+      const titleOf = (id) => (sessions.find((s) => s.id === id) || {}).title || String(id).slice(0, 16) + '…'
+      const shownPending = filterSession ? pending.filter((e) => e.sessionId === filterSession) : pending
 
       async function probeAction(reset) {
         if (!sessionId) return setMsg('先选一个会话。')
@@ -373,7 +377,7 @@ window.__ModuleLoader__.load({
               checked: gate.probeNightAlarms !== false,
               onChange: (e) => saveGate({ probeNightAlarms: e.target.checked }),
             }),
-            h('span', { style: dim }, '早晚安闹钟（睡前 22:45、早上 07:35 各定一条；是真正的约定闹钟，会出现在列表里）'),
+            h('span', { style: dim }, '早晚安闹钟（睡前 = 安静开始前 15 分，早上 = 安静结束后 5 分；都是真正的约定闹钟，会出现在列表里）'),
           ),
           h('div', { style: { display: 'flex', gap: '8px', alignItems: 'center', marginTop: '8px' } },
             h('input', {
@@ -398,12 +402,23 @@ window.__ModuleLoader__.load({
         ),
 
         h('div', { style: card },
-          h('div', { style: { fontWeight: 600, marginBottom: '6px' } }, '在等的（' + pending.length + '）'),
-          pending.length === 0
-            ? h('div', { style: dim }, '没有在等的闹钟。')
-            : pending.map((e) => h('div', { key: e.id, style: { display: 'flex', alignItems: 'center', gap: '8px', padding: '3px 0' } },
+          h('div', { style: { display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px', flexWrap: 'wrap' } },
+            h('span', { style: { fontWeight: 600 } }, '在等的（' + shownPending.length + '）'),
+            h('select', {
+              style: Object.assign({}, input, { padding: '2px 6px' }),
+              value: filterSession,
+              onChange: (e) => setFilterSession(e.target.value),
+            },
+              h('option', { value: '' }, '全部会话'),
+              sessions.map((s) => h('option', { key: s.id, value: s.id }, s.title || String(s.id).slice(0, 12) + '…')),
+            ),
+          ),
+          shownPending.length === 0
+            ? h('div', { style: dim }, pending.length ? '这个会话没有在等的闹钟。' : '没有在等的闹钟。')
+            : shownPending.map((e) => h('div', { key: e.id, style: { display: 'flex', alignItems: 'center', gap: '8px', padding: '3px 0' } },
                 h('span', { style: { fontVariantNumeric: 'tabular-nums', opacity: 0.7 } }, leftText(e.at)),
                 h('span', { style: { fontSize: '11px', padding: '0 5px', borderRadius: '6px', border: '1px solid currentColor', opacity: 0.7 } }, e.probe !== undefined ? '轻探' : '约定'),
+                h('span', { style: { fontSize: '11px', padding: '0 5px', borderRadius: '6px', background: 'rgba(128,128,128,.18)' } }, titleOf(e.sessionId)),
                 h('span', { style: { flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } },
                   (e.text || '') + ' · ' + fmtTime(e.at)),
                 h('button', { style: btn, onClick: () => cancel(e.id), disabled: busy }, '取消'),
