@@ -16,6 +16,7 @@
 - 🧹 清掉轻探旧链留下的死代码（`queueNextProbe` / `nextProbeAt` / `clampOutOfQuiet` 等）。
 - 📝 新增 `probe-log.txt`：每次排程和触发各记一行（`now` / `at` / `gapMin` / `fire=…`），
   出问题先看这个文件。
+- ✨ 「在等的闹钟」会显示**目标会话名**，并支持**按会话筛选**（全部会话 / 某个会话）。
 
 ## 0.2.0 — 2026-11-24
 
