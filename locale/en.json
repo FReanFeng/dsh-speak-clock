@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Speak Clock",
+    "description": "An alarm clock for proactive speech: the agent books the exact moment it will speak up in a session, and it fires once then."
+  }
+}

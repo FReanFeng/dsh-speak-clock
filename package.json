@@ -1,0 +1,49 @@
+{
+  "name": "dsh-speak-clock",
+  "version": "0.3.0",
+  "description": "Alarm clock + continuous probe loop for proactive speech: the agent schedules when to speak next, and a background loop keeps it alive.",
+  "type": "module",
+  "license": "MIT",
+  "exports": {
+    ".": "./index.js",
+    "./client": "./client.js",
+    "./icon": "./icon.svg",
+    "./locale/*.json": "./locale/*.json"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "immediately": true,
+      "inject": [
+        "@deepseek-ai/dsh-client-ui-conversation"
+      ]
+    }
+  },
+  "files": [
+    "index.js",
+    "client.js",
+    "cordis.patch.yml",
+    "locale/en.json",
+    "locale/zh.json",
+    "icon.svg",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "deepseek-harness",
+    "alarm",
+    "proactive",
+    "speak"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CHANGE_ME/dsh-speak-clock.git"
+  },
+  "homepage": "https://github.com/CHANGE_ME/dsh-speak-clock#readme"
+}

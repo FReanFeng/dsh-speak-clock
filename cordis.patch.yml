@@ -1,0 +1,3 @@
+- insert:
+    - id: speak-clock
+      name: 'dsh-speak-clock'
