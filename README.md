@@ -2,6 +2,14 @@
 
 给「主动搭话」装个闹钟：**agent 自己定下一次开口的时间**，到点精确响一次。
 
+## 安装
+
+```bash
+dsh plugin add github:13972252645/dsh-speak-clock
+```
+
+装完**重启一次 DSH**（bundle 层要重启才组装）。之后进「设置 → 搭话闹钟」配：开总开关、勾上要搭话的会话。
+
 ## 和 speak-up 的分工
 
 | | speak-up | speak-clock |
