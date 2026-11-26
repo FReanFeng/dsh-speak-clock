@@ -838,6 +838,13 @@ export function apply(ctx) {
     webRoute(webServer, '/dsh-speak-clock/cancel', async (req, res) => {
       const body = await jsonBody(req)
       const id = String(body?.id ?? '')
+      // 虚拟条目（轻探）：取消 = 停掉这个会话的轻探循环
+      if (id.startsWith('probe:')) {
+        const sid = id.slice('probe:'.length)
+        setProbeOff(sid, true)
+        clearProbeTimer(sid)
+        return reply(res, { ok: true, text: '轻探已停（这个会话不再自动探话）。' })
+      }
       const target = load().find((e) => e.id === id)
       if (!target) return reply(res, { ok: false, text: '没找到这条闹钟。' })
       const t = timers.get(target.id)
@@ -848,7 +855,21 @@ export function apply(ctx) {
     })
 
     webRoute(webServer, '/dsh-speak-clock/history', async (req, res) => {
-      reply(res, { ok: true, entries: load().slice(-30).reverse() })
+      // ⭐ 2026-11-26：轻探不落盘，但设置页要能看见它，否则出问题发现不了。
+      //   这里额外塞一条「虚拟条目」（virtual:true），只读展示，不改 schedules.json。
+      const virtual = []
+      for (const [sid, loop] of probeLoops) {
+        if (!loop || !loop.dueAt) continue
+        virtual.push({
+          id: 'probe:' + sid,
+          sessionId: sid,
+          at: loop.dueAt,
+          probe: true,
+          virtual: true,
+          text: '（轻探·后台自动续）',
+        })
+      }
+      reply(res, { ok: true, entries: virtual.concat(load().slice(-30).reverse()) })
     })
   }
 
@@ -1060,7 +1081,15 @@ export function apply(ctx) {
       }
       if (!list.length) return { ok: true, text: '一个闹钟都没有。用 speak_later 定一个。' }
       const titles = sessionTitles()
-      return { ok: true, text: list.map((e, i) => `${i + 1}. ${summarize(e, titles)}`).join('\n') }
+      const lines = list.map((e, i) => `${i + 1}. ${summarize(e, titles)}`)
+      // 轻探不落盘，但列表里也让它露个面，出问题好发现
+      for (const [sid, loop] of probeLoops) {
+        if (!loop || !loop.dueAt) continue
+        const name = titles.get(sid) || String(sid).slice(0, 16) + '…'
+        const mins = Math.max(0, Math.round((loop.dueAt - Date.now()) / 60000))
+        lines.push(`轻探：${mins} 分钟后（${fmt(loop.dueAt)}）→ 会话「${name}」· 后台自己续`)
+      }
+      return { ok: true, text: lines.join('\n') }
     },
   }))
 

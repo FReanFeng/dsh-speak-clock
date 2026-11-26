@@ -421,7 +421,7 @@ window.__ModuleLoader__.load({
                 h('span', { style: { fontSize: '11px', padding: '0 5px', borderRadius: '6px', background: 'rgba(128,128,128,.18)' } }, titleOf(e.sessionId)),
                 h('span', { style: { flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' } },
                   (e.text || '') + ' · ' + fmtTime(e.at)),
-                h('button', { style: btn, onClick: () => cancel(e.id), disabled: busy }, '取消'),
+                h('button', { style: btn, onClick: () => cancel(e.id), disabled: busy }, e.virtual ? '停掉' : '取消'),
               )),
         ),
 
